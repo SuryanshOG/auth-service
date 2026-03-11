@@ -1,0 +1,19 @@
+import Redis from "ioredis";
+import { config } from "../config";
+
+export const redis = new Redis(config.redis.url, {
+    maxRetriesPerRequest : 3,
+    retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+    }
+});
+
+redis.on("connect", () => console.log("Connected to Redis"));
+redis.on("error", (err) => console.error("Redis error:", err));
+
+export const RedisKey = {
+    userSessions : (userId : string) => `session:${userId}`,
+    blacklist : (token : string) => `blacklist:${token}`,
+    verifyToken : (token : string) => `verify:${token}`,
+}
